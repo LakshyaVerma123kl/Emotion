@@ -21,7 +21,10 @@ def create_application() -> FastAPI:
     
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.ALLOWED_ORIGINS,
+        allow_origins=[
+        "https://emotion-navy.vercel.app",  # ✅ your deployed frontend
+        "http://localhost:3000",            # optional: for local dev
+    ],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE"],
         allow_headers=["*"],
