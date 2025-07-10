@@ -4,7 +4,6 @@ import uuid
 from typing import Dict, List, Tuple
 from datetime import datetime
 from collections import Counter
-from transformers import pipeline
 from app.models.emotion import (
     EmotionType, 
     EmotionAnalysisRequest, 
@@ -16,11 +15,10 @@ from app.core.logging import get_logger
 logger = get_logger(__name__)
 
 class EmotionAnalyzer:
-    """Advanced emotion analysis service with improved accuracy"""
+    """Advanced emotion analysis service using comprehensive keyword analysis"""
     
     def __init__(self):
         self.analysis_count = 0
-        # emotion_history now stores tuples of (emotion_value, confidence)
         self.emotion_history: List[Tuple[str, float]] = [] 
         self.total_processing_time = 0.0
         
@@ -224,17 +222,12 @@ class EmotionAnalyzer:
             ]
         }
         
-        # NEW: real model pipeline
-        # This model classifies text into 6 emotions: 'sadness', 'joy', 'love', 'anger', 'fear', 'surprise'
-        self.real_pipeline = pipeline("text-classification", 
-                                      model="bhadresh-savani/distilbert-base-uncased-emotion")
-        
         logger.info("EmotionAnalyzer initialized successfully")
     
     def analyze_emotion(self, request: EmotionAnalysisRequest) -> EmotionAnalysisResponse:
         """
-        Analyzes emotion from text input using either a real ML model or mock logic.
-        Updates internal statistics regardless of the analysis method used.
+        Analyzes emotion from text input using comprehensive keyword analysis.
+        Updates internal statistics with each analysis.
         """
         start_time = time.time()
         analysis_id = str(uuid.uuid4())
@@ -242,55 +235,6 @@ class EmotionAnalyzer:
         logger.info(f"Starting emotion analysis {analysis_id} for text: {request.text[:100]}...")
         
         response: EmotionAnalysisResponse
-        try:
-            if request.use_real_model:
-                response = self._analyze_with_real_model(request, analysis_id, start_time)
-            else:
-                response = self._analyze_with_mock_logic(request, analysis_id, start_time)
-            
-            # Update statistics for both real and mock analyses
-            self.analysis_count += 1
-            # Store emotion value and confidence for stats calculation
-            self.emotion_history.append((response.emotion, response.confidence)) 
-            self.total_processing_time += response.processing_time
-            
-            logger.info(f"Analysis {analysis_id} completed: {response.emotion} ({response.confidence:.3f} confidence)")
-            return response
-            
-        except Exception as e:
-            logger.error(f"Error in emotion analysis {analysis_id}: {str(e)}")
-            raise
-            
-    def _analyze_with_real_model(self, request: EmotionAnalysisRequest, analysis_id: str, start_time: float) -> EmotionAnalysisResponse:
-        """Analyze emotion using the real model"""
-        logger.info(f"Running real model for analysis ID {analysis_id}")
-
-        try:
-            # The real model might return different labels than EmotionType enum.
-            # We'll use the label directly from the model.
-            result = self.real_pipeline(request.text)[0]
-            emotion_label = result["label"]
-            confidence = round(float(result["score"]), 3)
-
-            processing_time = round(time.time() - start_time, 3)
-
-            return EmotionAnalysisResponse(
-                emotion=emotion_label,
-                confidence=confidence,
-                secondary_emotions=[], # Real model typically gives one primary, can be extended
-                suggestions=["This is a real ML prediction. Suggestions are generic for now."],
-                emotion_intensity="medium", # Real model doesn't directly provide intensity
-                timestamp=datetime.now().isoformat(),
-                processing_time=processing_time,
-                analysis_id=analysis_id
-            )
-        except Exception as e:
-            logger.error(f"Failed to run real model for analysis ID {analysis_id}: {e}")
-            raise RuntimeError(f"Real model inference failed: {e}")
-
-    def _analyze_with_mock_logic(self, request: EmotionAnalysisRequest, analysis_id: str, start_time: float) -> EmotionAnalysisResponse:
-        """Analyze emotion using the existing mock logic"""
-        
         try:
             # Simulate realistic processing time
             processing_delay = random.uniform(0.8, 2.5)
@@ -345,10 +289,16 @@ class EmotionAnalyzer:
                 analysis_id=analysis_id
             )
             
+            # Update statistics
+            self.analysis_count += 1
+            self.emotion_history.append((response.emotion, response.confidence)) 
+            self.total_processing_time += response.processing_time
+            
+            logger.info(f"Analysis {analysis_id} completed: {response.emotion} ({response.confidence:.3f} confidence)")
             return response
             
         except Exception as e:
-            logger.error(f"Error in mock emotion analysis {analysis_id}: {str(e)}")
+            logger.error(f"Error in emotion analysis {analysis_id}: {str(e)}")
             raise
     
     def _calculate_emotion_scores(self, text: str) -> Dict[EmotionType, float]:
