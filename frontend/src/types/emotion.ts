@@ -30,5 +30,28 @@ export interface UseEmotionAnalysisReturn {
   reset: () => void;
   isLoading: boolean;
   result: EmotionAnalysisResponse | null;
-  error: ApiError | null; // Kept as null for now, will handle conversion in useEmotionAnalysis
+  error: ApiError | null;
+}
+
+// Add these definitions
+export type EmotionType =
+  | "Happy"
+  | "Sad"
+  | "Anxious"
+  | "Angry"
+  | "Excited"
+  | "Confused"
+  | "Calm"
+  | "Frustrated"
+  | "Neutral"
+  | "Hopeful"
+  | "Disappointed";
+
+export interface EmotionConfig {
+  name: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  description: string;
+  icon: string;
 }

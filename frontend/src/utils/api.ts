@@ -1,3 +1,4 @@
+// frontend/src/utils/api.ts
 import {
   EmotionAnalysisRequest,
   EmotionAnalysisResponse,
@@ -10,7 +11,7 @@ export const analyzeEmotion = async (
   request: EmotionAnalysisRequest
 ): Promise<EmotionAnalysisResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/analyze`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/emotion/analyze`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -28,6 +29,6 @@ export const analyzeEmotion = async (
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError("Network error occurred");
+    throw new ApiError("Network error occurred", 0); // Fixed: Added status code
   }
 };
