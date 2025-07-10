@@ -1,4 +1,4 @@
-# backend/app/main.py
+# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,9 +10,6 @@ import uvicorn
 logger = get_logger(__name__)
 
 def create_application() -> FastAPI:
-    """
-    Create and configure FastAPI application
-    """
     app = FastAPI(
         title=settings.PROJECT_NAME,
         description="A simple emotion reflection tool API",
@@ -22,7 +19,6 @@ def create_application() -> FastAPI:
         redoc_url="/redoc" if settings.DEBUG else None,
     )
     
-    # Configure CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ALLOWED_ORIGINS,
@@ -31,14 +27,12 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
     
-    # Include routers
     app.include_router(
         emotion_router,
         prefix="/api/v1/emotion",
         tags=["emotion"]
     )
     
-    # Root endpoint
     @app.get("/")
     async def root():
         return {
@@ -47,7 +41,6 @@ def create_application() -> FastAPI:
             "status": "running"
         }
     
-    # Global exception handler
     @app.exception_handler(Exception)
     async def global_exception_handler(request, exc):
         logger.error(f"Global exception: {str(exc)}")
@@ -58,12 +51,11 @@ def create_application() -> FastAPI:
     
     return app
 
-# Create the application instance
 app = create_application()
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.DEBUG,
